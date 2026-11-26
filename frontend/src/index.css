@@ -1,0 +1,88 @@
+/* Design tokens and base styles.
+   Dark-first: the palette below is the dark theme, and the light theme is the
+   override underneath. Day 5 turns these tokens into the Tailwind/shadcn theme. */
+
+:root {
+  --bg: #0b0d10;
+  --bg-elevated: #11151a;
+  --border: #1e242c;
+  --text: #e7eaee;
+  --text-muted: #8b93a1;
+  --accent: #6d8cff;
+  --accent-soft: rgba(109, 140, 255, 0.12);
+  --ok: #34d399;
+  --ok-soft: rgba(52, 211, 153, 0.12);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.12);
+  --warn: #fbbf24;
+
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", Consolas, monospace;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f7f8fa;
+    --bg-elevated: #ffffff;
+    --border: #e3e6eb;
+    --text: #14171c;
+    --text-muted: #5b6472;
+    --accent: #3b5bdb;
+    --accent-soft: rgba(59, 91, 219, 0.08);
+    --ok: #0f9d63;
+    --ok-soft: rgba(15, 157, 99, 0.1);
+    --danger: #d13438;
+    --danger-soft: rgba(209, 52, 56, 0.08);
+    --warn: #b45309;
+
+    color-scheme: light;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
