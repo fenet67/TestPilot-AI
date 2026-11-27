@@ -17,7 +17,10 @@ router = APIRouter(tags=["system"])
     "/health",
     response_model=HealthResponse,
     summary="Service health check",
-    description="Returns the service status, version and environment. Used by the frontend and by monitoring.",
+    description=(
+        "Returns the service status, version and environment. "
+        "Used by the frontend and by monitoring."
+    ),
 )
 def health_check() -> HealthResponse:
     return HealthResponse(

@@ -80,8 +80,10 @@ Rules:
 - Services depend on abstractions, not on FastAPI request objects, so they are unit-testable.
 - Only `core/` reads environment variables; everything else receives configuration.
 
-Day 1 implements `api`, `schemas` and `core` only. A `main.py` app factory (rather than a module-level
-app with side effects) keeps tests and future background workers able to build their own instance.
+Day 1 implemented `api`, `schemas` and `core`. Day 2 adds `services/` with the session service —
+routes now delegate to it, and the in-memory dict inside it is the single thing Day 6 replaces with a
+database repository. A `main.py` app factory (rather than a module-level app with side effects) keeps
+tests and future background workers able to build their own instance.
 
 ---
 
@@ -152,7 +154,9 @@ TestingSession 1─* TestPlan 1─* TestCase 1─1 TestExecution 1─* Evidence
 - `Evidence`: screenshots, console errors, network failures, step trace (stored in S3, referenced here).
 - `BugReport`: title, severity, reproduction steps, expected vs actual, evidence links.
 
-Day 3–4 build the browser observations that later fill this model; Day 6 persists it.
+Day 2 implements the top-level `TestingSession` only (`id`, `url`, `objective`, `status`, `limits`,
+timestamps) with an in-memory store and no relations. Day 3–4 build the browser observations that
+later fill the rest of the model; Day 6 persists it.
 
 ---
 
@@ -182,11 +186,20 @@ Threats: the target site is untrusted content, and the LLM can be steered by tha
 | 1 | Separate runtime vs dev requirements | Keeps the deployable image free of test tooling |
 | 1 | Vite + React + TypeScript | Fast dev loop, first-class TS, and the stack shadcn/ui expects on Day 5 |
 | 1 | Only `/health` implemented | Nothing is exposed before it works |
+| 2 | 422 for bad bodies, 400 for refused targets | Malformed input and a security refusal are different failures and should not share a code |
+| 2 | Target policy in `core/url_policy.py`, not in the schema | Reusable by the tool layer, which must re-check the model's URLs and every redirect |
+| 2 | `extra="forbid"` on request models | A typo'd field fails loudly instead of being silently dropped |
+| 2 | In-memory store behind `SessionService` | Lets Day 2 ship a real API without pretending persistence exists |
+| 2 | Each exception carries its own `status_code` | Keeps the error handler a single line; no status code is declared in two places |
 
 ---
 
 ## 9. Deliberately not built yet
 
 Database, Redis, Celery, Docker, auth, LLM calls and browser automation all arrive on their scheduled
-days. The frontend currently renders one placeholder screen with a live backend health probe; the real
+days. Sessions live in process memory, so they vanish on restart and are not shared between workers.
+The target-URL policy checks the URL's shape and literal host; hostname *resolution* is checked at
+navigation time, because a DNS name can point at a private address.
+
+The frontend still renders the Day 1 placeholder screen with a live backend health probe; the real
 dashboard replaces it on Day 5.

@@ -8,8 +8,8 @@ test strategy, generates structured test cases, executes them with Playwright, e
 observable evidence, and produces bug reports backed by screenshots, console errors and network
 failures.
 
-**Status:** Day 1 of a 21-day build — foundation only. Nothing below is claimed to work until it
-is implemented, tested and recorded in the daily report.
+**Status:** Day 2 of a 21-day build — foundation plus the testing-session API. Nothing below is
+claimed to work until it is implemented, tested and recorded in the daily report.
 
 ---
 
@@ -38,14 +38,23 @@ TestPilot-AI/
 │   │   ├── main.py              # app factory: middleware, routers, lifespan
 │   │   ├── api/
 │   │   │   ├── router.py        # aggregates versioned routers
+│   │   │   ├── errors.py        # domain error → HTTP response mapping
 │   │   │   └── routes/
-│   │   │       └── health.py    # GET /api/v1/health
+│   │   │       ├── health.py    # GET /api/v1/health
+│   │   │       └── sessions.py  # POST/GET /api/v1/sessions
 │   │   ├── core/
-│   │   │   └── config.py        # validated settings from env
-│   │   └── schemas/
-│   │       └── health.py        # API contract for health
+│   │   │   ├── config.py        # validated settings from env
+│   │   │   ├── exceptions.py    # expected domain errors
+│   │   │   └── url_policy.py    # target-URL checks (SSRF basics)
+│   │   ├── schemas/
+│   │   │   ├── health.py        # API contract for health
+│   │   │   └── session.py       # API contract for sessions
+│   │   └── services/
+│   │       └── sessions.py      # session logic + in-memory store (DB on Day 6)
 │   ├── tests/
-│   │   └── test_health.py
+│   │   ├── conftest.py
+│   │   ├── test_health.py
+│   │   └── test_sessions.py
 │   ├── requirements.txt         # runtime deps
 │   ├── requirements-dev.txt     # test/lint deps
 │   ├── pyproject.toml           # pytest + ruff config
@@ -57,8 +66,21 @@ TestPilot-AI/
 └── README.md
 ```
 
-As the project grows, `backend/app/` gains `services/` (AI planners, evaluators), `agent/`
-(the execution loop), `browser/` (Playwright tools), `db/` (models, sessions) and `workers/`.
+As the project grows, `backend/app/` gains `agent/` (the execution loop), `browser/` (Playwright
+tools), `db/` (models, migrations) and `workers/` (background jobs).
+
+### API surface
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/health` | Liveness: status, version, environment |
+| POST | `/api/v1/sessions` | Create a testing session (validates the target URL) |
+| GET | `/api/v1/sessions` | List sessions, newest first |
+| GET | `/api/v1/sessions/{id}` | Read one session |
+
+Sessions are stored in memory until Day 6 adds PostgreSQL, so they are lost on restart. Error
+bodies use FastAPI's standard `{"detail": ...}` shape: `422` for a malformed body, `400` for a
+refused target, `404` for a missing session.
 
 ---
 
